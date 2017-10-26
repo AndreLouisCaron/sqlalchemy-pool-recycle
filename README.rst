@@ -16,7 +16,8 @@ connection idle time as one would reasonably expect.
 Behavior analysis
 -----------------
 
-SQLAlchemy's documentation describes the rational behind the ``pool_recycle`` setting:
+SQLAlchemy's documentation describes the rationale behind the ``pool_recycle``
+setting:
 
    This parameter prevents the pool from using a particular connection that has
    passed a certain age, and is appropriate for database backends such as MySQL
