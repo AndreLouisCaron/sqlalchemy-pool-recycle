@@ -119,6 +119,52 @@ Run the demo through Tox::
 
    tox
 
+Example output::
+
+  test.py::test_pool_recycle[-1] 
+     connect
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   PASSED
+   test.py::test_pool_recycle[5] 
+     connect
+   .
+   .
+   .
+   .
+   .
+     close
+     connect
+   .
+   .
+   .
+   .
+   .
+     close
+     connect
+   .
+   .
+   .
+   .
+   .
+   PASSED
+
+You can see that the second example (with 5 second pool recycle) periodically
+reconnects.  If the pool worked as recommended, we would not see any
+reconnections during the test.
 
 Updating dependencies
 =====================

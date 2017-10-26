@@ -55,14 +55,20 @@ def mysql(docker_ip, docker_services):
     return (docker_ip, port, username, password)
 
 
-def test_pool_recycle(mysql):
+@pytest.mark.parametrize('pool_recycle', [
+    -1,  # none
+    5,   # expire after 5 seconds
+])
+def test_pool_recycle(mysql, pool_recycle):
     """Check pool recycle behavior."""
 
     # Show output on fresh line.
     print()
 
+    if isinstance(pool_recycle, timedelta):
+        pool_recycle = pool_recycle.total_seconds()
+
     # Prepare the engine.
-    recycle = timedelta(seconds=5)
     engine = sqlalchemy.create_engine(
         'mysql+pymysql://%s:%s@%s:%s' % (
             mysql[2],       # username
@@ -70,7 +76,7 @@ def test_pool_recycle(mysql):
             mysql[0],       # host
             str(mysql[1]),  # port
         ),
-        pool_recycle=recycle.total_seconds(),
+        pool_recycle=pool_recycle,
     )
 
     # Print something each time we open a new connection.
@@ -88,8 +94,9 @@ def test_pool_recycle(mysql):
     # Because ``pool_recycle`` checks the connection *age* rather than the
     # connection idle time, we'll see repeated reconnections throughout this
     # loop.
-    for i in range(30):
+    for i in range(15):
         r = engine.execute('SELECT 1').fetchall()
         assert len(r) == 1
         assert r[0] == (1,)
+        print('.')
         time.sleep(1.0)
