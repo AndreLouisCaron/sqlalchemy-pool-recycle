@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+
+version: '2'
+
+services:
+  mysql:
+    image: 'mysql:5.7'
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - 3306
