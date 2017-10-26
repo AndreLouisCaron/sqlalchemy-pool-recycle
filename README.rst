@@ -46,8 +46,8 @@ There is an important difference in behaivor here:
 #. SQLAlchemy closes the connection based on the time since it was first opened
    (rather than when it was last returned to the pool).
 
-Impact on server applicatinons
-------------------------------
+Impact on server applications
+-----------------------------
 
 In server applications that require low latency to MySQL, proper connection
 pooling is vital to performance.  The ideal scenario is that the server
