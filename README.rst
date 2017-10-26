@@ -25,7 +25,7 @@ SQLAlchemy's documentation describes the rational behind the ``pool_recycle`` se
 
    -- `Setting Pool Recycle`_ (SQLAlchemy documentation)
 
-.. _`Setting Pool Recycle``: http://docs.sqlalchemy.org/en/latest/core/pooling.html#setting-pool-recycle
+.. _`Setting Pool Recycle`: http://docs.sqlalchemy.org/en/latest/core/pooling.html#setting-pool-recycle
 
 The rationale behind this setting suggests its rationale is to pre-emptivly
 close the connection before MySQL does.  This intent clearly aims a protecting
