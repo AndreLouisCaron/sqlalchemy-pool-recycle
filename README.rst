@@ -89,9 +89,36 @@ ends with a timeout that is (slightly) shorter on the client than on server.
 Recommendation
 --------------
 
-In short, I recommend writing your own SQLAlchemy connection pool that
-pre-emptively closes connections based on how long the connection has been
-idle.
+I contacted the SQLAlchemy developers on the support mailing list and they had
+some really interesting insight on how to handle this issue.
+
+Based on this discussion, I recommend implementing your own disconnections
+based on idle time.  There is a really simple way to add it:
+
+.. code-block:: python
+
+       import sqlalchemy
+       import sqlalchemy.event
+       import sqlalchemy.exc
+
+       engine = sqlalchemy.create_engine(...)
+
+       idle_time = 30.0  # seconds.
+
+       @sqlalchemy.event.listens_for(engine, 'checkout')
+       def checkout(dbapi_connection, connection_record, connection_proxy):
+           now = time.time()
+           checkout_time = connection_record.info.get('checkout_time')
+           if checkout_time and now - checkout_time > idle_time:
+               raise sqlalchemy.exc.DisconnectionError(
+                   "recycling connection idle past %s seconds" % idle_time
+               )
+           connection_record.info['checkout_time'] = now
+
+You may still want to keep the ``pool_recycle`` setting as a crude form of
+garbage collection on both the client & server.  Ideally, this should be set to
+a really high time (e.g. a few hours) if you want to maximize the effectiveness
+of the connection pool.
 
 
 Prerequisites
@@ -120,9 +147,9 @@ Run the demo through Tox::
 
    tox
 
-Example output::
+Example output for the pool recycle setting::
 
-  test.py::test_pool_recycle[-1] 
+   test.py::test_pool_recycle[-1]
      connect
    .
    .
@@ -140,7 +167,7 @@ Example output::
    .
    .
    PASSED
-   test.py::test_pool_recycle[5] 
+   test.py::test_pool_recycle[5]
      connect
    .
    .
@@ -166,6 +193,38 @@ Example output::
 You can see that the second example (with 5 second pool recycle) periodically
 reconnects.  If the pool worked as recommended, we would not see any
 reconnections during the test.
+
+Example output for the custom idle time setting::
+
+   test.py::test_pool_idle_time[15.0-1.0-3.0]
+     connect
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   .
+   PASSED
+   test.py::test_pool_idle_time[15.0-5.0-3.0]
+     connect
+   .
+     close
+     connect
+   .
+     close
+     connect
+   .
+   PASSED
+
 
 Updating dependencies
 =====================
